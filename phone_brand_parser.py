@@ -21,9 +21,6 @@ def requestUrl(queryKeyWord):
         return
     else:
         response = requests.get("https://www.gsmarena.com/res.php3?sSearch=" + queryKeyWord)
-        # 解析resonse
-        print(response.text)
-        print("===============================")
         # html = """
         # <script>
         #     const KEY  = "BOiYMJ+RguIgeFLwLDlr2A==";
@@ -41,7 +38,7 @@ def requestUrl(queryKeyWord):
             try:
                 key = re.search(r'const KEY {2}= "(.*)";', script)
             except Exception as e:
-                print("An error occurred: ", e)
+                # print("An error occurred: ", e)
                 continue
 
             # 如果没有找到 KEY、IV 和 DATA，则跳过当前的循环
@@ -49,9 +46,9 @@ def requestUrl(queryKeyWord):
                 continue
             iv = re.search(r'const IV   = "(.*)";', script)
             data = re.search(r'const DATA = "(.*)";', script)
-            print(key.group(1))
-            print(iv.group(1))
-            print(data.group(1))
+            # print(key.group(1))
+            # print(iv.group(1))
+            # print(data.group(1))
 
             return key.group(1),iv.group(1),data.group(1)
 
@@ -78,14 +75,16 @@ def parsePhoneName(html):
     newResult = list(map(formatFunc,result))
     return " ".join(newResult)
 
-
+# 获取加密数据
 key, iv , encryptedData = requestUrl("CPH2531")
 
+# 转换与解密数据
 key_bytes = a2b_base64(key)
 iv_bytes = a2b_base64(iv)
 data_bytes = a2b_base64(encryptedData)
 plainHtml = aes_decrypt(key_bytes,iv_bytes,data_bytes).decode('utf-8')
 
+# 解析一组需要的标签
 i = plainHtml.index('<div class="search-more">')
 plainHtml = plainHtml[0:i]
 
@@ -96,12 +95,9 @@ for element in soup("\n"):
 
 # Pretty-print(格式化打印) Beautiful Soup对象的字符串表示形式
 formatted_html = soup.prettify()
-
+# 格式化URL
 x = formatted_html
-print("************************")
-print("plainHtml = " , x)
-
-
+# 解析机型名称
 e = parsePhoneName(x)
 
 print("************************")
