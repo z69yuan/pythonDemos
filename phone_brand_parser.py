@@ -1,4 +1,6 @@
 #coding=utf-8  // 写入UTF-8的命令声明
+import time
+
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -9,6 +11,9 @@ from binascii import a2b_base64
 
 
 from lxml import etree
+
+import sys
+import pdb
 
 print("hello world")
 print("人生苦短,我用Python！")
@@ -75,30 +80,46 @@ def parsePhoneName(html):
     newResult = list(map(formatFunc,result))
     return " ".join(newResult)
 
-# 获取加密数据
-key, iv , encryptedData = requestUrl("CPH2531")
 
-# 转换与解密数据
-key_bytes = a2b_base64(key)
-iv_bytes = a2b_base64(iv)
-data_bytes = a2b_base64(encryptedData)
-plainHtml = aes_decrypt(key_bytes,iv_bytes,data_bytes).decode('utf-8')
+def getPhoneBrandInfo(modelName):
+    # 获取加密数据
+    key, iv , encryptedData = requestUrl(modelName)
 
-# 解析一组需要的标签
-i = plainHtml.index('<div class="search-more">')
-plainHtml = plainHtml[0:i]
+    # 转换与解密数据
+    key_bytes = a2b_base64(key)
+    iv_bytes = a2b_base64(iv)
+    data_bytes = a2b_base64(encryptedData)
+    plainHtml = aes_decrypt(key_bytes,iv_bytes,data_bytes).decode('utf-8')
 
-soup = BeautifulSoup(plainHtml, 'html.parser')
-# 去除无用的换行
-for element in soup("\n"):
-    element.extract()
+    # pdb.set_trace()
+    # 解析一组需要的标签
+    i = plainHtml.index('<div class="search-more">')
+    if i == -1:
+        print(modelName,"load failure ...")
+        return
+    plainHtml = plainHtml[0:i]
 
-# Pretty-print(格式化打印) Beautiful Soup对象的字符串表示形式
-formatted_html = soup.prettify()
-# 格式化URL
-x = formatted_html
-# 解析机型名称
-e = parsePhoneName(x)
+    soup = BeautifulSoup(plainHtml, 'html.parser')
+    # 去除无用的换行
+    for element in soup("\n"):
+        element.extract()
 
-print("************************")
-print("plainHtml = " , e)
+    # Pretty-print(格式化打印) Beautiful Soup对象的字符串表示形式
+    formatted_html = soup.prettify()
+    # 格式化URL
+    x = formatted_html
+    # 解析机型名称
+    e = parsePhoneName(x)
+
+    print("************************")
+    print("plainHtml = " , e)
+
+
+
+# getPhoneBrandInfo("CPH2531")
+
+for arg in sys.argv[1:]:
+    getPhoneBrandInfo(arg)
+    time.sleep(0.05)
+
+
