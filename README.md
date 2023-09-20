@@ -12,5 +12,5 @@ pip install numpy  #科学上网，效果更加
 #### 使用
 pcm 转wav格式
 ```shell
-python pcm2wav.py a.pcm b.wav
+python pcm2wav.py b.pcm b.wav
 ```
